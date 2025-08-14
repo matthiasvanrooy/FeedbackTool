@@ -1,0 +1,16 @@
+# Build output
+bin/
+obj/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Local config / secrets
+appsettings.Development.json
+appsettings.Local.json
+*.Secret.json
+*.log
