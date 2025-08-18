@@ -68,8 +68,10 @@ public class ToolContext : DbContext
         modelBuilder.Entity<User>()
             .HasOne(u => u.ClassGroup)
             .WithMany(cg => cg.Users) // If ClassGroup lacks Users, change to .WithMany()
-            .HasForeignKey("ClassGroupId") // shadow FK if you don't add the property on User
+            .HasForeignKey(u => u.ClassGroupId)
+            .IsRequired()
             .OnDelete(DeleteBehavior.Restrict);
+
 
         // ---------- Indexes / constraints ----------
         modelBuilder.Entity<User>()
