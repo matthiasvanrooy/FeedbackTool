@@ -2,7 +2,7 @@
 bin/
 obj/
 
-# IDE
+# IDE / Editor configs
 .vs/
 .vscode/
 .idea/
@@ -14,3 +14,6 @@ appsettings.Development.json
 appsettings.Local.json
 *.Secret.json
 *.log
+
+# Rider caches (already in .idea, but just in case)
+*.iml
