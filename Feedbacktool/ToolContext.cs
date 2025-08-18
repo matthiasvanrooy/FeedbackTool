@@ -1,7 +1,7 @@
 ﻿namespace Feedbacktool;
 
 using Microsoft.EntityFrameworkCore;
-using Feedbacktool.models;
+using Models;
 using System.Collections.Generic;
 
 public class ToolContext : DbContext

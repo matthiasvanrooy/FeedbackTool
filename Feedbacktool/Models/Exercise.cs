@@ -1,4 +1,4 @@
-﻿namespace Feedbacktool.models;
+﻿namespace Feedbacktool.Models;
 
 public class Exercise
 {

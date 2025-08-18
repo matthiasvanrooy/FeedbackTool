@@ -1,6 +1,5 @@
-﻿namespace Feedbacktool.models
-{
-    public class User
+﻿namespace Feedbacktool.Models;
+public class User
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -27,4 +26,3 @@
         // Empty constructor needed if you want frameworks like EF Core or JSON serialization to work
         public User() { }
     }
-}

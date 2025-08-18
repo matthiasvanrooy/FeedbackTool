@@ -1,0 +1,6 @@
+@Feedbacktool.Api_HostAddress = http://localhost:5287
+
+GET {{Feedbacktool.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
