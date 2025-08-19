@@ -1,149 +1,119 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Feedbacktool.Models;          // User, ClassGroup, etc.
+using Feedbacktool;          // ToolContext
+using Feedbacktool.Models;   // User, ClassGroup, etc.
 
 namespace Feedbacktool.Api.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class UsersController : ControllerBase
+    public class UserController : ControllerBase
     {
         private readonly ToolContext _db;
-        public UsersController(ToolContext db) => _db = db;
+        public UserController(ToolContext db) => _db = db;
 
-        // DTOs - never expose Password
-        public record UserDto(int Id, string Name, string Email, bool IsTeacher, int ClassGroupId);
-        public record CreateUserDto(string Name, string Email, string Password, bool IsTeacher, int ClassGroupId);
-        public record UpdateUserDto(string? Name, string? Email, string? Password, bool? IsTeacher, int? ClassGroupId);
-
-        private static UserDto ToDto(User u) => new(u.Id, u.Name, u.Email, u.IsTeacher, u.ClassGroupId);
-
-        /// <summary>
-        /// GET api/users
-        /// </summary>
         [HttpGet]
-        [ProducesResponseType(typeof(IEnumerable<UserDto>), 200)]
-        public async Task<ActionResult<IEnumerable<UserDto>>> GetAll(CancellationToken ct)
+        public async Task<ActionResult<IEnumerable<User>>> GetAll()
         {
-            var data = await _db.Users
+            var users = await _db.Users
+                .Include(u => u.ClassGroup)
                 .AsNoTracking()
-                .Select(u => new UserDto(u.Id, u.Name, u.Email, u.IsTeacher, u.ClassGroupId))
-                .ToListAsync(ct);
-            return Ok(data);
+                .ToListAsync();
+
+            return Ok(users);
         }
 
-        /// <summary>
-        /// GET api/users/{id}
-        /// </summary>
         [HttpGet("{id:int}")]
-        [ProducesResponseType(typeof(UserDto), 200)]
-        [ProducesResponseType(404)]
-        public async Task<ActionResult<UserDto>> Get(int id, CancellationToken ct)
+        public async Task<ActionResult<User>> Get(int id)
         {
-            var u = await _db.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, ct);
-            return u is null ? NotFound() : Ok(ToDto(u));
+            var user = await _db.Users
+                .Include(u => u.ClassGroup)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            return user is null ? NotFound() : Ok(user);
         }
 
-        /// <summary>
-        /// POST api/users
-        /// Creates a user. ClassGroupId is required and must exist.
-        /// </summary>
         [HttpPost]
-        [ProducesResponseType(typeof(UserDto), 201)]
-        [ProducesResponseType(400)]
-        public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserDto body, CancellationToken ct)
+        public async Task<ActionResult<User>> Create(User user)
         {
-            // Email uniqueness
-            var emailExists = await _db.Users.AnyAsync(x => x.Email == body.Email, ct);
-            if (emailExists)
-            {
-                ModelState.AddModelError("email", "Email already exists.");
-                return ValidationProblem(ModelState);
-            }
-
             // Required ClassGroup must exist
-            var cg = await _db.ClassGroups.FindAsync(new object?[] { body.ClassGroupId }, ct);
+            var cg = await _db.ClassGroups.FindAsync(user.ClassGroupId);
             if (cg is null)
             {
                 ModelState.AddModelError("classGroupId", "Class group not found.");
                 return ValidationProblem(ModelState);
             }
 
-            var user = new User
+            // Email uniqueness
+            var emailTaken = await _db.Users.AnyAsync(x => x.Email == user.Email);
+            if (emailTaken)
             {
-                Name = body.Name,
-                Email = body.Email,
-                Password = body.Password, // TODO: hash in production
-                IsTeacher = body.IsTeacher,
-                ClassGroupId = body.ClassGroupId,
-                ClassGroup = cg
-            };
+                ModelState.AddModelError("email", "Email already exists.");
+                return ValidationProblem(ModelState);
+            }
 
+            // NOTE: hash passwords in production
+            user.ClassGroup = cg;
             _db.Users.Add(user);
-            await _db.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Get), new { id = user.Id }, ToDto(user));
+            return CreatedAtAction(nameof(Get), new { id = user.Id }, user);
         }
 
-        /// <summary>
-        /// PUT api/users/{id}
-        /// Updates an existing user. If ClassGroupId is provided, it must exist.
-        /// </summary>
         [HttpPut("{id:int}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdateUserDto body, CancellationToken ct)
+        public async Task<IActionResult> Update(int id, User user)
         {
-            var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
+            var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (u is null) return NotFound();
 
             // Email change → check uniqueness
-            if (body.Email is not null && !string.Equals(body.Email, u.Email, System.StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(user.Email, u.Email, System.StringComparison.OrdinalIgnoreCase))
             {
-                var taken = await _db.Users.AnyAsync(x => x.Email == body.Email && x.Id != id, ct);
+                var taken = await _db.Users.AnyAsync(x => x.Email == user.Email && x.Id != id);
                 if (taken)
                 {
                     ModelState.AddModelError("email", "Email already exists.");
                     return ValidationProblem(ModelState);
                 }
-                u.Email = body.Email;
+                u.Email = user.Email;
             }
 
-            if (body.Name is not null) u.Name = body.Name;
-            if (body.Password is not null) u.Password = body.Password; // TODO: hash
-            if (body.IsTeacher.HasValue) u.IsTeacher = body.IsTeacher.Value;
+            // Update scalar fields
+            u.Name = user.Name;
+            u.Password = user.Password; // NOTE: hash in prod
+            u.IsTeacher = user.IsTeacher;
 
-            // Optional change of ClassGroup
-            if (body.ClassGroupId.HasValue)
+            // Update required ClassGroup (must exist)
+            if (user.ClassGroupId != u.ClassGroupId)
             {
-                var cg = await _db.ClassGroups.FindAsync(new object?[] { body.ClassGroupId.Value }, ct);
+                var cg = await _db.ClassGroups.FindAsync(user.ClassGroupId);
                 if (cg is null)
                 {
                     ModelState.AddModelError("classGroupId", "Class group not found.");
                     return ValidationProblem(ModelState);
                 }
-                u.ClassGroupId = body.ClassGroupId.Value;
+                u.ClassGroupId = user.ClassGroupId;
                 u.ClassGroup = cg;
             }
 
-            await _db.SaveChangesAsync(ct);
+            // TODO: handle Subjects/ScoreGroups sync if you post them on update
+
+            await _db.SaveChangesAsync();
             return NoContent();
         }
 
-        /// <summary>
-        /// DELETE api/users/{id}
-        /// </summary>
         [HttpDelete("{id:int}")]
-        [ProducesResponseType(204)]
-        [ProducesResponseType(404)]
-        public async Task<IActionResult> Delete(int id, CancellationToken ct)
+        public async Task<IActionResult> Delete(int id)
         {
-            var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
+            var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id);
             if (u is null) return NotFound();
 
             _db.Users.Remove(u);
-            await _db.SaveChangesAsync(ct);
+            await _db.SaveChangesAsync();
             return NoContent();
         }
     }

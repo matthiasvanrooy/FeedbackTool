@@ -1,11 +1,18 @@
-﻿namespace Feedbacktool.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Feedbacktool.Models;
 public class User
     {
         public int Id { get; set; }
+        [Required]
         public string Name { get; set; }
+        [Required]
         public string Email { get; set; }
+        [Required]
         public string Password { get; set; }
+        [Required]
         public bool IsTeacher { get; set; }
+        [Required]
         public int ClassGroupId { get; set; }
         public ClassGroup ClassGroup { get; set; }
         public ICollection<Subject> Subjects { get; set; } = new HashSet<Subject>();
