@@ -19,7 +19,7 @@ public class User
         public ICollection<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();
 
 
-        public User(int id, string name, string email, string password, bool isTeacher, int classGroupId, ClassGroup classGroup, ICollection<Subject> subjects,  ICollection<ScoreGroup> scoreGroups)
+        public User(int id, string name, string email, string password, bool isTeacher, int classGroupId, ICollection<Subject> subjects,  ICollection<ScoreGroup> scoreGroups)
         {
             Id = id;
             Name = name;
@@ -27,7 +27,6 @@ public class User
             Password = password;
             IsTeacher = isTeacher;
             ClassGroupId = classGroupId;
-            ClassGroup = classGroup;
             Subjects = subjects;
             ScoreGroups = scoreGroups;
         }

@@ -3,16 +3,9 @@
 public class ScoreGroup : ClassGroup
 { 
     public int SubjectId { get; set; }
-    public Subject Subject { get; set; }
-    
-    public ScoreGroup(int subjectId, Subject subject)
-    {
-        Id = subjectId;
-        Name = subject.Name;
-        Users = subject.Users;
-        SubjectId = subjectId;
-        Subject = subject;
-    }
+    public Subject Subject { get; set; } = null!;
+    public ICollection<User> Members { get; set; } = new HashSet<User>(); // <- add this if you want easy reverse queries
+
 
     public ScoreGroup()
     {

@@ -15,7 +15,7 @@ namespace Feedbacktool.Api.Controllers
         private readonly ToolContext _db;
         public UserController(ToolContext db) => _db = db;
 
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<User>>> GetAll()
         {
             var users = await _db.Users
@@ -35,6 +35,17 @@ namespace Feedbacktool.Api.Controllers
                 .FirstOrDefaultAsync(x => x.Id == id);
 
             return user is null ? NotFound() : Ok(user);
+        }
+        
+        [HttpGet("{userId:int}/scoregroups")]
+        public async Task<ActionResult<IEnumerable<ScoreGroup>>> GetUserScoreGroups(int userId)
+        {
+            var groups = await _db.ScoreGroups
+                .Where(g => g.Users.Any(u => u.Id == userId))  // requires ScoreGroup.Users nav (see note)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return Ok(groups);
         }
 
         [HttpPost]

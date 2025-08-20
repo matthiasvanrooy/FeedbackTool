@@ -6,6 +6,7 @@ public class Subject
     public string Name { get; set; }
     public ICollection<User> Users { get; set; } = new HashSet<User>();
     public ICollection<Exercise> Exercises { get; set; } = new HashSet<Exercise>();
+    public ICollection<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();
 
     public Subject(int id, string name, ICollection<User> users, ICollection<Exercise> exercises)
     {

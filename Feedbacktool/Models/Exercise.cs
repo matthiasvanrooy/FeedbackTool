@@ -8,9 +8,10 @@ public class Exercise
     public Category Category { get; set; }
     public int Score { get; set; }
     public int UserScore { get; set; }
+    public int SubjectId { get; set; }
     public Subject Subject { get; set; }
 
-    public Exercise(int id, string name, string description, Category category, int score,  int userScore,  Subject subject)
+    public Exercise(int id, string name, string description, Category category, int score,  int userScore,  int subjectId)
     {
         Id = id;
         Name = name;
@@ -18,7 +19,7 @@ public class Exercise
         Category = category;
         Score = score;
         UserScore = userScore;
-        Subject = subject;
+        SubjectId = subjectId;
     }
 
     public Exercise()
