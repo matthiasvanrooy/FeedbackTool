@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿namespace Feedbacktool.Api.Controllers;
+using DTOs;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Feedbacktool.Models;   // User, ClassGroup, etc.
+using Models;   // User, ClassGroup, etc.
 
-namespace Feedbacktool.Api.Controllers
-{
     [ApiController]
     [Route("api/[controller]")]
     public class UserController : ControllerBase
@@ -12,7 +12,7 @@ namespace Feedbacktool.Api.Controllers
         public UserController(ToolContext db) => _db = db;
 
         [HttpGet("all")]
-        public async Task<ActionResult<IEnumerable<User>>> GetAll()
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAll()
         {
             var users = await _db.Users
                 .Include(u => u.ClassGroup)
@@ -93,7 +93,7 @@ namespace Feedbacktool.Api.Controllers
             // Update scalar fields
             u.Name = user.Name;
             u.Password = user.Password; // NOTE: hash in prod
-            u.IsTeacher = user.IsTeacher;
+            u.Role = user.Role;
 
             // Update required ClassGroup (must exist)
             if (user.ClassGroupId != u.ClassGroupId)
@@ -125,4 +125,3 @@ namespace Feedbacktool.Api.Controllers
             return NoContent();
         }
     }
-}

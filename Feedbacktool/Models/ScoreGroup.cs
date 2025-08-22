@@ -1,9 +1,13 @@
-﻿namespace Feedbacktool.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Feedbacktool.Models;
 
 public class ScoreGroup
 { 
     public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
+    [Required]
+    public string Name { get; set; } = "";
+    [Required]
     public int SubjectId { get; set; }
     public Subject Subject { get; set; } = null!;
     public ICollection<User> Users { get; set; } = new HashSet<User>(); // <- add this if you want easy reverse queries

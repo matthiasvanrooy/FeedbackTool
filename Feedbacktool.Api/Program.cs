@@ -1,23 +1,42 @@
 using System.Text.Json.Serialization;
-using Feedbacktool;
-using Feedbacktool.Models; // ToolContext
+using Feedbacktool.Models;                 // ToolContext
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Feedbacktool;
+using Feedbacktool.Api.AutoMapper;        // MappingProfile
 
 var builder = WebApplication.CreateBuilder(args);
 
+// DbContext
 builder.Services.AddDbContext<ToolContext>(opt =>
     opt.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
         sql => sql.MigrationsAssembly("Feedbacktool.Api"))
 );
 
-builder.Services.AddControllers()    
-    .AddJsonOptions(o => 
+builder.Services.AddLogging();
+
+// Controllers + JSON
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
     {
-    o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
-    o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull; 
-    });;
+        o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+        o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IMapper>(sp =>
+{
+    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+
+    var config = new AutoMapper.MapperConfiguration(cfg =>
+    {
+        cfg.AddProfile<MappingProfile>(); // your profile
+    }, loggerFactory); // <- satisfy the 2-arg ctor
+
+    return config.CreateMapper();
+});
 
 var app = builder.Build();
 
@@ -26,7 +45,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ToolContext>();
 
-    // Ensure DB is created (safe with Postgres migrations)
+    // In dev, EnsureCreated is OK; for migrations, prefer db.Database.Migrate()
     db.Database.EnsureCreated();
 
     if (!db.ClassGroups.Any())
@@ -39,14 +58,24 @@ using (var scope = app.Services.CreateScope())
         var s2 = new Subject { Name = "English" };
         db.Subjects.AddRange(s1, s2);
 
+        var admin = new User
+        {
+            Name = "Admin",
+            Email = "admin@example.com",
+            Password = "admin", // dev only; hash in prod
+            Role = Role.Admin,
+            ClassGroup = cg1,
+            Subjects = new List<Subject> { s2 }
+        };
+
         var alice = new User
         {
             Name = "Alice",
             Email = "alice@example.com",
-            Password = "pw1", // NOTE: plain text for testing, hash in prod
-            IsTeacher = false,
+            Password = "pw1",
+            Role = Role.Teacher,
             ClassGroup = cg1,
-            Subjects = new List<Subject> { s2 } // Alice takes English
+            Subjects = new List<Subject> { s2 }
         };
 
         var bob = new User
@@ -54,12 +83,12 @@ using (var scope = app.Services.CreateScope())
             Name = "Bob",
             Email = "bob@example.com",
             Password = "pw2",
-            IsTeacher = true,
+            Role = Role.Student,
             ClassGroup = cg2,
-            Subjects = new List<Subject> { s1 } // Bob takes Math
+            Subjects = new List<Subject> { s1 }
         };
 
-        db.Users.AddRange(alice, bob);
+        db.Users.AddRange(admin, alice, bob);
 
         db.Exercises.AddRange(
             new Exercise
@@ -85,9 +114,9 @@ using (var scope = app.Services.CreateScope())
         var sg1 = new ScoreGroup { Name = "Math Midterm", SubjectId = s1.Id };
         var sg2 = new ScoreGroup { Name = "English Oral Exam", SubjectId = s2.Id };
 
-        // Add users to score groups (many-to-many)
-        sg1.Users.Add(bob);   // Bob is in Math Midterm
-        sg2.Users.Add(alice); // Alice is in English Oral Exam
+        // many-to-many
+        sg1.Users.Add(bob);
+        sg2.Users.Add(alice);
 
         db.ScoreGroups.AddRange(sg1, sg2);
 
@@ -97,5 +126,6 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+// app.UseHttpsRedirection(); // optional
 app.MapControllers();
 app.Run();

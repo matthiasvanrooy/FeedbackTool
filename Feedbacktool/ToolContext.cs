@@ -63,6 +63,8 @@ public class ToolContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+        
+        modelBuilder.Entity<User>().Property(u => u.Role).HasConversion<string>();
 
         // ---------- Subject -> Exercise (one-to-many) ----------
         // Prefer a real FK property Exercise.SubjectId (int) instead of shadow FK.
