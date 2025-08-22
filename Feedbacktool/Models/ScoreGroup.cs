@@ -1,12 +1,20 @@
 ﻿namespace Feedbacktool.Models;
 
-public class ScoreGroup : ClassGroup
+public class ScoreGroup
 { 
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
     public int SubjectId { get; set; }
     public Subject Subject { get; set; } = null!;
-    public ICollection<User> Members { get; set; } = new HashSet<User>(); // <- add this if you want easy reverse queries
+    public ICollection<User> Users { get; set; } = new HashSet<User>(); // <- add this if you want easy reverse queries
 
-
+    public ScoreGroup(int id, string name, int subjectId, ICollection<User> users)
+    {
+        Id = id;
+        Name = name;
+        SubjectId = subjectId;
+        Users = users;
+    }
     public ScoreGroup()
     {
         

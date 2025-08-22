@@ -82,12 +82,12 @@ using (var scope = app.Services.CreateScope())
             }
         );
 
-        var sg1 = new ScoreGroup { Name = "Math Midterm", Subject = s1 };
-        var sg2 = new ScoreGroup { Name = "English Oral Exam", Subject = s2 };
+        var sg1 = new ScoreGroup { Name = "Math Midterm", SubjectId = s1.Id };
+        var sg2 = new ScoreGroup { Name = "English Oral Exam", SubjectId = s2.Id };
 
         // Add users to score groups (many-to-many)
-        sg1.Members.Add(bob);   // Bob is in Math Midterm
-        sg2.Members.Add(alice); // Alice is in English Oral Exam
+        sg1.Users.Add(bob);   // Bob is in Math Midterm
+        sg2.Users.Add(alice); // Alice is in English Oral Exam
 
         db.ScoreGroups.AddRange(sg1, sg2);
 

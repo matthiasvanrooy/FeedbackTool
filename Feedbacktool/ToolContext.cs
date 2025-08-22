@@ -36,11 +36,19 @@ public class ToolContext : DbContext
                     j.ToTable("UserSubjects");
                 });
 
+        // ---------- User -> ClassGroup (many-to-one, required) ----------
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.ClassGroup)
+            .WithMany(cg => cg.Users)
+            .HasForeignKey(u => u.ClassGroupId)
+            .IsRequired()
+            .OnDelete(DeleteBehavior.Restrict);
+        
         // ---------- User <-> ScoreGroup (many-to-many) ----------
         // If you added ScoreGroup.Users, use WithMany(sg => sg.Users); else keep WithMany()
         modelBuilder.Entity<User>()
             .HasMany(u => u.ScoreGroups)
-            .WithMany(sg => sg.Members)
+            .WithMany(sg => sg.Users)
             .UsingEntity<Dictionary<string, object>>(
                 "UserScoreGroup",
                 j => j.HasOne<ScoreGroup>().WithMany().HasForeignKey("ScoreGroupId").OnDelete(DeleteBehavior.Cascade),
@@ -50,6 +58,11 @@ public class ToolContext : DbContext
                     j.HasKey("UserId", "ScoreGroupId");
                     j.ToTable("UserScoreGroups");
                 });
+        
+        // ---------- Indexes / constraints ----------
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.Email)
+            .IsUnique();
 
         // ---------- Subject -> Exercise (one-to-many) ----------
         // Prefer a real FK property Exercise.SubjectId (int) instead of shadow FK.
@@ -65,18 +78,7 @@ public class ToolContext : DbContext
             .WithMany(s => s.ScoreGroups) // add Subject.ScoreGroups collection to your model for this
             .HasForeignKey(sg => sg.SubjectId)
             .OnDelete(DeleteBehavior.Cascade);
+        
 
-        // ---------- User -> ClassGroup (many-to-one, required) ----------
-        modelBuilder.Entity<User>()
-            .HasOne(u => u.ClassGroup)
-            .WithMany(cg => cg.Users)
-            .HasForeignKey(u => u.ClassGroupId)
-            .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // ---------- Indexes / constraints ----------
-        modelBuilder.Entity<User>()
-            .HasIndex(u => u.Email)
-            .IsUnique();
     }
 }

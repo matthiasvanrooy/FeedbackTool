@@ -1,9 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Feedbacktool;          // ToolContext
 using Feedbacktool.Models;   // User, ClassGroup, etc.
 
 namespace Feedbacktool.Api.Controllers
@@ -42,6 +38,7 @@ namespace Feedbacktool.Api.Controllers
         {
             var groups = await _db.ScoreGroups
                 .Where(g => g.Users.Any(u => u.Id == userId))  // requires ScoreGroup.Users nav (see note)
+                .Include(s => s.Users)
                 .AsNoTracking()
                 .ToListAsync();
 
