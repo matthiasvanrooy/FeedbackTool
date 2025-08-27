@@ -3,7 +3,8 @@ using Feedbacktool.Models;                 // ToolContext
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using Feedbacktool;
-using Feedbacktool.Api.AutoMapper;        // MappingProfile
+using Feedbacktool.Api.AutoMapper;
+using Feedbacktool.Services; // MappingProfile
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,9 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+builder.Services.AddScoped<ClassGroupService>();
+builder.Services.AddScoped<ScoreGroupService>();
+builder.Services.AddScoped<UserService>();
 builder.Services.AddSingleton<IMapper>(sp =>
 {
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();

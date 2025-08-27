@@ -1,0 +1,131 @@
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using Feedbacktool.DTOs;
+using Feedbacktool.Models;
+
+namespace Feedbacktool.Services;
+
+public enum RemoveUserFromScoreGroupResult { NotFound, Success }
+
+public sealed class ScoreGroupService
+{
+    private readonly ToolContext _db;
+    private readonly IMapper _mapper;
+
+    public ScoreGroupService(ToolContext db, IMapper mapper)
+    {
+        _db = db;
+        _mapper = mapper;
+    }
+
+    public async Task<ScoreGroupDto?> GetByIdAsync(int id, CancellationToken ct) =>
+        await _db.ScoreGroups
+            .Where(s => s.Id == id)
+            .ProjectTo<ScoreGroupDto>(_mapper.ConfigurationProvider)
+            .AsNoTracking()
+            .SingleOrDefaultAsync(ct);
+
+    public async Task<List<ScoreGroupDto>> GetAllAsync(CancellationToken ct) =>
+        await _db.ScoreGroups
+            .ProjectTo<ScoreGroupDto>(_mapper.ConfigurationProvider)
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+    public async Task<List<UserDto>> GetUsersAsync(int scoreGroupId, CancellationToken ct) =>
+        await _db.Users
+            .Where(u => u.ScoreGroups.Any(g => g.Id == scoreGroupId))
+            .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
+            .AsNoTracking()
+            .ToListAsync(ct);
+
+    public async Task<ScoreGroupDto> CreateAsync(CreateScoreGroupRequest req, CancellationToken ct)
+    {
+        if (req is null) throw new ValidationException("Request body is required.");
+
+        var name = (req.Name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ValidationException("Name is required.");
+
+        var subjectExists = await _db.Subjects.AnyAsync(s => s.Id == req.SubjectId, ct);
+        if (!subjectExists)
+            throw new ValidationException($"Subject with id {req.SubjectId} does not exist.");
+
+        // Optional: ensure unique (SubjectId, Name)
+        var dup = await _db.ScoreGroups.AnyAsync(sg => sg.SubjectId == req.SubjectId && sg.Name == name, ct);
+        if (dup) throw new ValidationException("A score group with the same name already exists for this subject.");
+
+        var sg = new ScoreGroup
+        {
+            Name = name,
+            SubjectId = req.SubjectId
+        };
+
+        _db.ScoreGroups.Add(sg);
+        await _db.SaveChangesAsync(ct);
+
+        return _mapper.Map<ScoreGroupDto>(sg);
+    }
+
+    public async Task<ScoreGroupDto?> UpdateAsync(int id, UpdateScoreGroupRequest req, CancellationToken ct)
+    {
+        if (req is null) throw new ValidationException("Request body is required.");
+
+        var sg = await _db.ScoreGroups.FirstOrDefaultAsync(s => s.Id == id, ct);
+        if (sg is null) return null;
+
+        var name = (req.Name ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ValidationException("Name is required.");
+
+        if (sg.SubjectId != req.SubjectId)
+        {
+            var exists = await _db.Subjects.AnyAsync(s => s.Id == req.SubjectId, ct);
+            if (!exists) throw new ValidationException($"Subject with id {req.SubjectId} does not exist.");
+            sg.SubjectId = req.SubjectId;
+        }
+
+        // Optional: keep (SubjectId, Name) unique
+        var dup = await _db.ScoreGroups.AnyAsync(x => x.Id != id && x.SubjectId == sg.SubjectId && x.Name == name, ct);
+        if (dup) throw new ValidationException("A score group with the same name already exists for this subject.");
+
+        sg.Name = name;
+
+        await _db.SaveChangesAsync(ct);
+        return _mapper.Map<ScoreGroupDto>(sg);
+    }
+
+    public async Task<bool> AddUserAsync(int scoreGroupId, int userId, CancellationToken ct)
+    {
+        var user = await _db.Users
+            .Include(u => u.ScoreGroups)
+            .FirstOrDefaultAsync(u => u.Id == userId, ct);
+
+        var sg = await _db.ScoreGroups.FirstOrDefaultAsync(g => g.Id == scoreGroupId, ct);
+
+        if (user is null || sg is null) return false;
+
+        if (!user.ScoreGroups.Any(g => g.Id == scoreGroupId))
+            user.ScoreGroups.Add(sg);
+
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<RemoveUserFromScoreGroupResult> RemoveUserAsync(int scoreGroupId, int userId, CancellationToken ct)
+    {
+        var user = await _db.Users
+            .Include(u => u.ScoreGroups)
+            .FirstOrDefaultAsync(u => u.Id == userId, ct);
+
+        if (user is null) return RemoveUserFromScoreGroupResult.NotFound;
+
+        var sg = user.ScoreGroups.FirstOrDefault(g => g.Id == scoreGroupId);
+        if (sg is null) return RemoveUserFromScoreGroupResult.NotFound;
+
+        user.ScoreGroups.Remove(sg);
+        await _db.SaveChangesAsync(ct);
+        return RemoveUserFromScoreGroupResult.Success;
+    }
+}
