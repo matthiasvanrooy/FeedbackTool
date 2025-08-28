@@ -7,6 +7,7 @@ public class Subject
     public int Id { get; set; }
     [Required]
     public string Name { get; set; } = "";
+    public string? ImageUrl { get; set; }
     public ICollection<User> Users { get; set; } = new HashSet<User>();
     public ICollection<Exercise> Exercises { get; set; } = new HashSet<Exercise>();
     public ICollection<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();

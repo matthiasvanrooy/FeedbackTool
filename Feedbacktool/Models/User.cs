@@ -13,7 +13,7 @@ public class User
         [Required]
         public int ClassGroupId { get; set; }
 
-        public ClassGroup ClassGroup { get; set; } = null!;
+        public ClassGroup? ClassGroup { get; set; }
         public ICollection<Subject> Subjects { get; set; } = new HashSet<Subject>();
         public ICollection<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();
 

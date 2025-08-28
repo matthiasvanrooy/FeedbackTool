@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Feedbacktool.DTOs.SubjectDTOs;
 
 namespace Feedbacktool.Api.AutoMapper;
 
@@ -12,5 +13,6 @@ public class MappingProfile : Profile
         CreateMap<User, UserDto>();
         CreateMap<ScoreGroup, ScoreGroupDto>();
         CreateMap<ClassGroup, ClassGroupDto>();
+        CreateMap<Subject, SubjectDto>();
     }
 }
