@@ -9,6 +9,13 @@ namespace Feedbacktool.Services;
 
 public enum RemoveUserFromScoreGroupResult { NotFound, Success }
 
+public enum DeleteScoreGroupResult
+{
+    Deleted,
+    NotFound,
+    HasUsers
+}
+
 public sealed class ScoreGroupService
 {
     private readonly ToolContext _db;
@@ -127,5 +134,24 @@ public sealed class ScoreGroupService
         user.ScoreGroups.Remove(sg);
         await _db.SaveChangesAsync(ct);
         return RemoveUserFromScoreGroupResult.Success;
+    }
+    
+    public async Task<DeleteScoreGroupResult> DeleteAsync(int scoreGroupId, CancellationToken ct)
+    {
+        // Does it exist?
+        var exists = await _db.ScoreGroups.AnyAsync(s => s.Id == scoreGroupId, ct);
+        if (!exists) return DeleteScoreGroupResult.NotFound;
+
+        // Any users linked?
+        var hasUsers = await _db.Users
+            .AnyAsync(u => u.ScoreGroups.Any(g => g.Id == scoreGroupId), ct);
+        if (hasUsers) return DeleteScoreGroupResult.HasUsers;
+
+        // Safe to delete
+        var affected = await _db.ScoreGroups
+            .Where(s => s.Id == scoreGroupId)
+            .ExecuteDeleteAsync(ct);
+
+        return affected > 0 ? DeleteScoreGroupResult.Deleted : DeleteScoreGroupResult.NotFound;
     }
 }

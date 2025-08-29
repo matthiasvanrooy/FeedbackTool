@@ -120,7 +120,7 @@ public sealed class UserService
         return _mapper.Map<UserDto>(u);
     }
 
-    public async Task<bool> DeleteAsync(int id, CancellationToken ct)
+    public async Task<bool> UserDeleteAsync(int id, CancellationToken ct)
     {
         var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (u is null) return false;

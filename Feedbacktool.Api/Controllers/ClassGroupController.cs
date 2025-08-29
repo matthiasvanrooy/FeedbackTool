@@ -13,7 +13,7 @@ public class ClassGroupController : ControllerBase
 
     public ClassGroupController(ClassGroupService svc) => _svc = svc;
 
-    [HttpGet("{classGroupId:int}")]
+    [HttpGet("{classGroupId:int}", Name = "GetClassGroupById")]
     public async Task<ActionResult<ClassGroupDto>> GetClassGroup(int classGroupId, CancellationToken ct)
     {
         var dto = await _svc.GetByIdAsync(classGroupId, ct);
@@ -64,6 +64,18 @@ public class ClassGroupController : ControllerBase
         {
             RemoveUserResult.NotFound => NotFound(),
             RemoveUserResult.Conflict => Conflict("A user must belong to a ClassGroup. To move them, call PUT /api/ClassGroup/{targetClassGroupId}/users/{userId}."),
+            _ => NoContent()
+        };
+    }
+    
+    [HttpDelete("{classGroupId:int}")]
+    public async Task<IActionResult> Delete(int classGroupId, CancellationToken ct)
+    {
+        var result = await _svc.DeleteAsync(classGroupId, ct);
+        return result switch
+        {
+            DeleteClassGroupResult.NotFound => NotFound(),
+            DeleteClassGroupResult.HasUsers => Conflict("Cannot delete ClassGroup: users are linked. Move users to another ClassGroup first."),
             _ => NoContent()
         };
     }

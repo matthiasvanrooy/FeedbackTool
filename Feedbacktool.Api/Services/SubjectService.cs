@@ -86,10 +86,10 @@ public class SubjectService
             .AsNoTracking()
             .ToListAsync(ct);
 
-    public async void SubjectDelete(int subjectId, CancellationToken ct) =>
+    public async Task<int> SubjectDeleteAsync(int subjectId, CancellationToken ct) =>
         await _db.Subjects
             .Where(s => s.Id == subjectId)
-            .ExecuteDeleteAsync();
+            .ExecuteDeleteAsync(ct);
     
     public async Task<SubjectDto> CreateAsync(CreateSubjectRequest req, CancellationToken ct)
     {

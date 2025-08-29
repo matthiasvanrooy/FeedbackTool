@@ -12,7 +12,7 @@ public class ScoreGroupController : ControllerBase
     private readonly ScoreGroupService _svc;
     public ScoreGroupController(ScoreGroupService svc) => _svc = svc;
 
-    [HttpGet("{scoreGroupId:int}")]
+    [HttpGet("{scoreGroupId:int}", Name = "GetScoreGroupById")]
     public async Task<ActionResult<ScoreGroupDto>> GetScoreGroup(int scoreGroupId, CancellationToken ct)
     {
         var dto = await _svc.GetByIdAsync(scoreGroupId, ct);
@@ -66,6 +66,18 @@ public class ScoreGroupController : ControllerBase
         return result switch
         {
             RemoveUserFromScoreGroupResult.NotFound => NotFound(),
+            _ => NoContent()
+        };
+    }
+    
+    [HttpDelete("{scoreGroupId:int}")]
+    public async Task<IActionResult> Delete(int scoreGroupId, CancellationToken ct)
+    {
+        var result = await _svc.DeleteAsync(scoreGroupId, ct);
+        return result switch
+        {
+            DeleteScoreGroupResult.NotFound => NotFound(),
+            DeleteScoreGroupResult.HasUsers => Conflict("Cannot delete ScoreGroup: users are linked. Remove users first."),
             _ => NoContent()
         };
     }

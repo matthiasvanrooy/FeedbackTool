@@ -9,6 +9,13 @@ namespace Feedbacktool.Services;
 
 public enum RemoveUserResult { NotFound, Conflict, Success }
 
+public enum DeleteClassGroupResult
+{
+    Deleted,
+    NotFound,
+    HasUsers
+}
+
 public sealed class ClassGroupService
 {
     private readonly ToolContext _db;
@@ -92,5 +99,23 @@ public sealed class ClassGroupService
         // user.ClassGroupId = null;
         // await _db.SaveChangesAsync(ct);
         // return RemoveUserResult.Success;
+    }
+    
+    public async Task<DeleteClassGroupResult> DeleteAsync(int classGroupId, CancellationToken ct)
+    {
+        // Exists?
+        var exists = await _db.ClassGroups.AnyAsync(c => c.Id == classGroupId, ct);
+        if (!exists) return DeleteClassGroupResult.NotFound;
+
+        // Any users linked?
+        var hasUsers = await _db.Users.AnyAsync(u => u.ClassGroupId == classGroupId, ct);
+        if (hasUsers) return DeleteClassGroupResult.HasUsers;
+
+        // Delete
+        var affected = await _db.ClassGroups
+            .Where(c => c.Id == classGroupId)
+            .ExecuteDeleteAsync(ct);
+
+        return affected > 0 ? DeleteClassGroupResult.Deleted : DeleteClassGroupResult.NotFound;
     }
 }

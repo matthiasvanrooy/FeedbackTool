@@ -57,5 +57,5 @@ public class UserController : ControllerBase
 
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
-        => await _svc.DeleteAsync(id, ct) ? NoContent() : NotFound();
+        => await _svc.UserDeleteAsync(id, ct) ? NoContent() : NotFound();
 }
