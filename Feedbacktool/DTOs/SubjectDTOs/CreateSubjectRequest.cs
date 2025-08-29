@@ -8,5 +8,5 @@ public class CreateSubjectRequest
     [Required]
     public string Name { get; set; } = "";
     //IFormFile for image upload
-    public IFormFile Image { get; set; }
+    public IFormFile? Image { get; set; }
 }
