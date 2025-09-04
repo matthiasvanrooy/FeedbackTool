@@ -2,10 +2,11 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using Feedbacktool.DTOs;
+using Feedbacktool.DTOs.ScoreGroupDTOs;
+using Feedbacktool.DTOs.UserDTOs;
 using Feedbacktool.Models;
 
-namespace Feedbacktool.Services;
+namespace Feedbacktool.Api.Services;
 
 public enum RemoveUserFromScoreGroupResult { NotFound, Success }
 
@@ -82,26 +83,31 @@ public sealed class ScoreGroupService
         var sg = await _db.ScoreGroups.FirstOrDefaultAsync(s => s.Id == id, ct);
         if (sg is null) return null;
 
-        var name = (req.Name ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ValidationException("Name is required.");
-
-        if (sg.SubjectId != req.SubjectId)
+        // Update Name if provided
+        if (!string.IsNullOrWhiteSpace(req.Name))
         {
-            var exists = await _db.Subjects.AnyAsync(s => s.Id == req.SubjectId, ct);
-            if (!exists) throw new ValidationException($"Subject with id {req.SubjectId} does not exist.");
-            sg.SubjectId = req.SubjectId;
+            var name = req.Name.Trim();
+
+            // Optional: keep (SubjectId, Name) unique
+            var dup = await _db.ScoreGroups.AnyAsync(x => x.Id != id && x.SubjectId == (req.SubjectId ?? sg.SubjectId) && x.Name == name, ct);
+            if (dup) throw new ValidationException("A score group with the same name already exists for this subject.");
+
+            sg.Name = name;
         }
 
-        // Optional: keep (SubjectId, Name) unique
-        var dup = await _db.ScoreGroups.AnyAsync(x => x.Id != id && x.SubjectId == sg.SubjectId && x.Name == name, ct);
-        if (dup) throw new ValidationException("A score group with the same name already exists for this subject.");
+        // Update SubjectId if provided
+        if (req.SubjectId.HasValue && sg.SubjectId != req.SubjectId.Value)
+        {
+            var exists = await _db.Subjects.AnyAsync(s => s.Id == req.SubjectId.Value, ct);
+            if (!exists) throw new ValidationException($"Subject with id {req.SubjectId.Value} does not exist.");
 
-        sg.Name = name;
+            sg.SubjectId = req.SubjectId.Value;
+        }
 
         await _db.SaveChangesAsync(ct);
         return _mapper.Map<ScoreGroupDto>(sg);
     }
+
 
     public async Task<bool> AddUserScoreGroupAsync(int scoreGroupId, int userId, CancellationToken ct)
     {

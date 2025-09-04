@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Feedbacktool.DTOs;
-using Feedbacktool.Services;
+using Feedbacktool.DTOs.UserDTOs;
+using Feedbacktool.DTOs.ScoreGroupDTOs;
+using Feedbacktool.Api.Services;
 
 namespace Feedbacktool.Api.Controllers;
 

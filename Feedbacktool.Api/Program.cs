@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using Feedbacktool;
 using Feedbacktool.Api.AutoMapper;
-using Feedbacktool.Services; // MappingProfile
+using Feedbacktool.Api.Services; // MappingProfile
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +29,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ClassGroupService>();
 builder.Services.AddScoped<ScoreGroupService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ExerciseService>();
+builder.Services.AddScoped<SubjectService>();
 builder.Services.AddSingleton<IMapper>(sp =>
 {
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
@@ -49,7 +51,10 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ToolContext>();
 
     // In dev, EnsureCreated is OK; for migrations, prefer db.Database.Migrate()
-    db.Database.EnsureCreated();
+    if (app.Environment.IsDevelopment())
+    {
+       db.Database.Migrate(); 
+    }
 
     if (!db.ClassGroups.Any())
     {
@@ -114,8 +119,8 @@ using (var scope = app.Services.CreateScope())
             }
         );
 
-        var sg1 = new ScoreGroup { Name = "Math Midterm", SubjectId = s1.Id };
-        var sg2 = new ScoreGroup { Name = "English Oral Exam", SubjectId = s2.Id };
+        var sg1 = new ScoreGroup { Name = "Math Midterm", Subject = s1};
+        var sg2 = new ScoreGroup { Name = "English Oral Exam", Subject = s2 };
 
         // many-to-many
         sg1.Users.Add(bob);

@@ -1,12 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Feedbacktool.DTOs;
+﻿namespace Feedbacktool.DTOs.ScoreGroupDTOs;
 
 public class UpdateScoreGroupRequest
 {
-    [Required]
-    public string Name { get; set; } = string.Empty;
-
-    [Required]
-    public int SubjectId { get; set; }
+    public string? Name { get; set; } = string.Empty;
+    public int? SubjectId { get; set; }
 }

@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ExerciseDTOs;
-using Feedbacktool.Services;
+using Feedbacktool.Api.Services;
 
 namespace Feedbacktool.Api.Controllers;
 

@@ -6,7 +6,7 @@ using Feedbacktool.DTOs.SubjectDTOs;
 using Feedbacktool.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace Feedbacktool.Services;
+namespace Feedbacktool.Api.Services;
 
 public class SubjectService
 {
@@ -21,13 +21,13 @@ public class SubjectService
         _env = env;
     }
     
-    private static readonly HashSet<string> _allowedExts = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> AllowedExts = new(StringComparer.OrdinalIgnoreCase)
         { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
 
     private string GetWebRootSafe()
     {
         // Fallback if WebRootPath is null (e.g., in tests)
-        return _env.WebRootPath ?? Path.Combine(_env.ContentRootPath, "wwwroot");
+        return _env.WebRootPath;
     }
 
     private async Task<string> SaveImageAsync(IFormFile file, CancellationToken ct)
@@ -37,7 +37,7 @@ public class SubjectService
             throw new ValidationException("Image is too large (max 10MB).");
 
         var ext = Path.GetExtension(file.FileName);
-        if (string.IsNullOrWhiteSpace(ext) || !_allowedExts.Contains(ext))
+        if (string.IsNullOrWhiteSpace(ext) || !AllowedExts.Contains(ext))
             throw new ValidationException("Unsupported image type. Allowed: .jpg, .jpeg, .png, .gif, .webp.");
 
         var uploads = Path.Combine(GetWebRootSafe(), "uploads", "subjects");
@@ -95,7 +95,7 @@ public class SubjectService
     {
         if (req is null) throw new ValidationException("Request body is required.");
 
-        var name = (req.Name ?? string.Empty).Trim();
+        var name = req.Name.Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ValidationException("Name is required.");
 

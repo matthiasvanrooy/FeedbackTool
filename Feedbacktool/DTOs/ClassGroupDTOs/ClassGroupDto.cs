@@ -1,4 +1,6 @@
-﻿namespace Feedbacktool.DTOs;
+﻿using Feedbacktool.DTOs.UserDTOs;
+
+namespace Feedbacktool.DTOs.ClassGroupDTOs;
 
 public class ClassGroupDto
 {

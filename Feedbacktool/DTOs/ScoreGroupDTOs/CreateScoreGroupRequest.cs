@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Feedbacktool.DTOs;
+namespace Feedbacktool.DTOs.ScoreGroupDTOs;
 
 public class CreateScoreGroupRequest
 {

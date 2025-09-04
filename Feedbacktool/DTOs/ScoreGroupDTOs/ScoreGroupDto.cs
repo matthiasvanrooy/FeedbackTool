@@ -1,6 +1,6 @@
-﻿using Feedbacktool.Models;
+﻿using Feedbacktool.DTOs.UserDTOs;
 
-namespace Feedbacktool.DTOs;
+namespace Feedbacktool.DTOs.ScoreGroupDTOs;
 
 public sealed class ScoreGroupDto
 {

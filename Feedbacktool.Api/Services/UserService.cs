@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using Feedbacktool.DTOs;
 using Feedbacktool.Models;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using Feedbacktool.DTOs.ScoreGroupDTOs;
+using Feedbacktool.DTOs.UserDTOs;
 
-namespace Feedbacktool.Services;
+namespace Feedbacktool.Api.Services;
 
 public sealed class UserService
 {
@@ -17,6 +18,8 @@ public sealed class UserService
         _db = db;
         _mapper = mapper;
     }
+    
+    //USER HAALT GEEN SCOREGROUPS enz op, DTO
 
     // -------- Queries --------
 
@@ -83,42 +86,49 @@ public sealed class UserService
         var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (u is null) return null;
 
-        // Email
-        var newEmail = (req.Email ?? string.Empty).Trim().ToLowerInvariant();
-        if (string.IsNullOrWhiteSpace(newEmail))
-            throw new ValidationException("Email is required.");
-
-        if (!string.Equals(newEmail, u.Email, StringComparison.OrdinalIgnoreCase))
+        // Update Email if provided
+        if (!string.IsNullOrWhiteSpace(req.Email))
         {
-            var taken = await _db.Users.AnyAsync(x => x.Email.ToLower() == newEmail && x.Id != id, ct);
-            if (taken) throw new ValidationException("Email already exists.");
-            u.Email = newEmail;
+            var newEmail = req.Email.Trim().ToLowerInvariant();
+            if (!string.Equals(newEmail, u.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                var taken = await _db.Users.AnyAsync(x => x.Email.ToLower() == newEmail && x.Id != id, ct);
+                if (taken) throw new ValidationException("Email already exists.");
+                u.Email = newEmail;
+            }
         }
 
-        // Scalars
-        var newName = (req.Name ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(newName))
-            throw new ValidationException("Name is required.");
+        // Update Name if provided
+        if (!string.IsNullOrWhiteSpace(req.Name))
+        {
+            u.Name = req.Name.Trim();
+        }
 
-        u.Name = newName;
+        // Update Password if provided
         if (!string.IsNullOrWhiteSpace(req.Password))
         {
-            // NOTE: hash in prod
+            // NOTE: hash in production
             u.Password = req.Password.Trim();
         }
-        u.Role = req.Role;
 
-        // ClassGroup
-        if (req.ClassGroupId != u.ClassGroupId)
+        // Update Role if provided
+        if (req.Role.HasValue)
         {
-            var cg = await _db.ClassGroups.FindAsync(new object?[] { req.ClassGroupId }, ct);
+            u.Role = req.Role.Value;
+        }
+
+        // Update ClassGroup if provided
+        if (req.ClassGroupId.HasValue && req.ClassGroupId != u.ClassGroupId)
+        {
+            var cg = await _db.ClassGroups.FindAsync(new object?[] { req.ClassGroupId.Value }, ct);
             if (cg is null) throw new ValidationException("Class group not found.");
-            u.ClassGroupId = req.ClassGroupId;
+            u.ClassGroupId = req.ClassGroupId.Value;
         }
 
         await _db.SaveChangesAsync(ct);
         return _mapper.Map<UserDto>(u);
     }
+
 
     public async Task<bool> DeleteUserAsync(int id, CancellationToken ct)
     {

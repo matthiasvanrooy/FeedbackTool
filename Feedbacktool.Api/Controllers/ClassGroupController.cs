@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
-using Feedbacktool.DTOs;
-using Feedbacktool.Services;
+using Feedbacktool.Api.Services;
+using Feedbacktool.DTOs.ClassGroupDTOs;
 
 namespace Feedbacktool.Api.Controllers;
 

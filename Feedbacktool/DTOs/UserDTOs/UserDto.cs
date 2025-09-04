@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Feedbacktool.Models;
 
-namespace Feedbacktool.DTOs;
+namespace Feedbacktool.DTOs.UserDTOs;
 
 public sealed class UserDto
 {

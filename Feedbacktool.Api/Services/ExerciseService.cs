@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ExerciseDTOs;
 using Feedbacktool.Models;
 
-namespace Feedbacktool.Services;
+namespace Feedbacktool.Api.Services;
 
 public enum DeleteExerciseResult
 {
@@ -18,7 +18,7 @@ public sealed class ExerciseService
 {
     private readonly ToolContext _db;
     private readonly IMapper _mapper;
-
+    
     public ExerciseService(ToolContext db, IMapper mapper)
     {
         _db = db;
@@ -66,18 +66,38 @@ public sealed class ExerciseService
         var ex = await _db.Exercises.FirstOrDefaultAsync(e => e.Id == id, ct);
         if (ex is null) return null;
 
-        var name = req.Name.Trim();
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ValidationException("Name is required.");
+        // Update Name if provided
+        if (!string.IsNullOrWhiteSpace(req.Name))
+        {
+            var name = req.Name.Trim();
+            var exists = await _db.Exercises.AnyAsync(e => e.Id != id && e.Name == name, ct);
+            if (exists) throw new ValidationException("An exercise with that name already exists.");
+            ex.Name = name;
+        }
 
-        var exists = await _db.Exercises.AnyAsync(e => e.Id != id && e.Name == name, ct);
-        if (exists) throw new ValidationException("An exercise with that name already exists.");
+        // Update Description if provided
+        if (!string.IsNullOrWhiteSpace(req.Description))
+        {
+            ex.Description = req.Description.Trim();
+        }
 
-        ex.Name = name;
-        ex.Description = req.Description.Trim();
-        ex.Category = req.Category;
-        ex.Score = req.Score;
-        ex.SubjectId = req.SubjectId;
+        // Update Category if provided
+        if (req.Category.HasValue)
+        {
+            ex.Category = req.Category.Value;
+        }
+
+        // Update Score if provided
+        if (req.Score.HasValue)
+        {
+            ex.Score = req.Score.Value;
+        }
+
+        // Update SubjectId if provided
+        if (req.SubjectId.HasValue)
+        {
+            ex.SubjectId = req.SubjectId.Value;
+        }
 
         await _db.SaveChangesAsync(ct);
         return _mapper.Map<ExerciseDto>(ex);

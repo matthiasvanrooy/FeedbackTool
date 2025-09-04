@@ -71,7 +71,7 @@ public class ToolContext : DbContext
             .HasIndex(u => u.Email)
             .IsUnique(); // recommended: normalize/lowercase emails at write-time
 
-        modelBuilder.Entity<User>().Property(u => u.Role).HasConversion<string>();
+        modelBuilder.Entity<User>().Property(u => u.Role).HasConversion<int>();
 
         // Optional but recommended: guard rails on strings
         modelBuilder.Entity<User>(e =>

@@ -2,10 +2,10 @@
 using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
-using Feedbacktool.DTOs;
+using Feedbacktool.DTOs.ClassGroupDTOs;
 using Feedbacktool.Models;
 
-namespace Feedbacktool.Services;
+namespace Feedbacktool.Api.Services;
 
 public enum RemoveUserResult { NotFound, Conflict, Success }
 
@@ -42,7 +42,7 @@ public sealed class ClassGroupService
 
     public async Task<ClassGroupDto> CreateClassGroupAsync(CreateClassGroupRequest req, CancellationToken ct)
     {
-        var name = (req.Name ?? string.Empty).Trim();
+        var name = req.Name.Trim();
         if (string.IsNullOrWhiteSpace(name))
             throw new ValidationException("Name is required.");
 
