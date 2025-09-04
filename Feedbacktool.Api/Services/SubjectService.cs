@@ -73,7 +73,7 @@ public class SubjectService
             .AsNoTracking()
             .SingleOrDefaultAsync(ct);
     
-    public async Task<List<SubjectDto>> GetAllAsync(CancellationToken ct) =>
+    public async Task<List<SubjectDto>> GetAllSubjectsAsync(CancellationToken ct) =>
         await _db.Subjects
             .ProjectTo<SubjectDto>(_mapper.ConfigurationProvider)
             .AsNoTracking()
@@ -86,12 +86,12 @@ public class SubjectService
             .AsNoTracking()
             .ToListAsync(ct);
 
-    public async Task<int> SubjectDeleteAsync(int subjectId, CancellationToken ct) =>
+    public async Task<int> DeleteSubjectAsync(int subjectId, CancellationToken ct) =>
         await _db.Subjects
             .Where(s => s.Id == subjectId)
             .ExecuteDeleteAsync(ct);
     
-    public async Task<SubjectDto> CreateAsync(CreateSubjectRequest req, CancellationToken ct)
+    public async Task<SubjectDto> CreateSubjectAsync(CreateSubjectRequest req, CancellationToken ct)
     {
         if (req is null) throw new ValidationException("Request body is required.");
 
@@ -116,7 +116,7 @@ public class SubjectService
         return _mapper.Map<SubjectDto>(subject);
     }
 
-    public async Task<SubjectDto?> UpdateAsync(int id, UpdateSubjectRequest req, CancellationToken ct)
+    public async Task<SubjectDto?> UpdateSubjectAsync(int id, UpdateSubjectRequest req, CancellationToken ct)
     {
         if (req is null) throw new ValidationException("Request body is required.");
 

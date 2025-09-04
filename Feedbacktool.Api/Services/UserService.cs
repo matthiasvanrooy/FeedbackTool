@@ -20,13 +20,13 @@ public sealed class UserService
 
     // -------- Queries --------
 
-    public async Task<List<UserDto>> GetAllAsync(CancellationToken ct) =>
+    public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct) =>
         await _db.Users
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
             .AsNoTracking()
             .ToListAsync(ct);
 
-    public async Task<UserDto?> GetByIdAsync(int id, CancellationToken ct) =>
+    public async Task<UserDto?> GetUserByIdAsync(int id, CancellationToken ct) =>
         await _db.Users
             .Where(u => u.Id == id)
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
@@ -42,7 +42,7 @@ public sealed class UserService
 
     // -------- Commands --------
 
-    public async Task<UserDto> CreateAsync(CreateUserRequest req, CancellationToken ct)
+    public async Task<UserDto> CreateUserAsync(CreateUserRequest req, CancellationToken ct)
     {
         if (req is null) throw new ValidationException("Request body is required.");
 
@@ -76,7 +76,7 @@ public sealed class UserService
         return _mapper.Map<UserDto>(user);
     }
 
-    public async Task<UserDto?> UpdateAsync(int id, UpdateUserRequest req, CancellationToken ct)
+    public async Task<UserDto?> UpdateUserAsync(int id, UpdateUserRequest req, CancellationToken ct)
     {
         if (req is null) throw new ValidationException("Request body is required.");
 
@@ -120,7 +120,7 @@ public sealed class UserService
         return _mapper.Map<UserDto>(u);
     }
 
-    public async Task<bool> UserDeleteAsync(int id, CancellationToken ct)
+    public async Task<bool> DeleteUserAsync(int id, CancellationToken ct)
     {
         var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (u is null) return false;

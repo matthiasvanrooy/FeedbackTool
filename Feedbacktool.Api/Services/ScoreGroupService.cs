@@ -27,27 +27,27 @@ public sealed class ScoreGroupService
         _mapper = mapper;
     }
 
-    public async Task<ScoreGroupDto?> GetByIdAsync(int id, CancellationToken ct) =>
+    public async Task<ScoreGroupDto?> GetScoreGroupByIdAsync(int id, CancellationToken ct) =>
         await _db.ScoreGroups
             .Where(s => s.Id == id)
             .ProjectTo<ScoreGroupDto>(_mapper.ConfigurationProvider)
             .AsNoTracking()
             .SingleOrDefaultAsync(ct);
 
-    public async Task<List<ScoreGroupDto>> GetAllAsync(CancellationToken ct) =>
+    public async Task<List<ScoreGroupDto>> GetAllScoreGroupsAsync(CancellationToken ct) =>
         await _db.ScoreGroups
             .ProjectTo<ScoreGroupDto>(_mapper.ConfigurationProvider)
             .AsNoTracking()
             .ToListAsync(ct);
 
-    public async Task<List<UserDto>> GetUsersAsync(int scoreGroupId, CancellationToken ct) =>
+    public async Task<List<UserDto>> GetUsersScoreGroupAsync(int scoreGroupId, CancellationToken ct) =>
         await _db.Users
             .Where(u => u.ScoreGroups.Any(g => g.Id == scoreGroupId))
             .ProjectTo<UserDto>(_mapper.ConfigurationProvider)
             .AsNoTracking()
             .ToListAsync(ct);
 
-    public async Task<ScoreGroupDto> CreateAsync(CreateScoreGroupRequest req, CancellationToken ct)
+    public async Task<ScoreGroupDto> CreateScoreGroupAsync(CreateScoreGroupRequest req, CancellationToken ct)
     {
         if (req is null) throw new ValidationException("Request body is required.");
 
@@ -75,7 +75,7 @@ public sealed class ScoreGroupService
         return _mapper.Map<ScoreGroupDto>(sg);
     }
 
-    public async Task<ScoreGroupDto?> UpdateAsync(int id, UpdateScoreGroupRequest req, CancellationToken ct)
+    public async Task<ScoreGroupDto?> UpdateScoreGroupAsync(int id, UpdateScoreGroupRequest req, CancellationToken ct)
     {
         if (req is null) throw new ValidationException("Request body is required.");
 
@@ -103,7 +103,7 @@ public sealed class ScoreGroupService
         return _mapper.Map<ScoreGroupDto>(sg);
     }
 
-    public async Task<bool> AddUserAsync(int scoreGroupId, int userId, CancellationToken ct)
+    public async Task<bool> AddUserScoreGroupAsync(int scoreGroupId, int userId, CancellationToken ct)
     {
         var user = await _db.Users
             .Include(u => u.ScoreGroups)
@@ -120,7 +120,7 @@ public sealed class ScoreGroupService
         return true;
     }
 
-    public async Task<RemoveUserFromScoreGroupResult> RemoveUserAsync(int scoreGroupId, int userId, CancellationToken ct)
+    public async Task<RemoveUserFromScoreGroupResult> RemoveUserScoreGroupAsync(int scoreGroupId, int userId, CancellationToken ct)
     {
         var user = await _db.Users
             .Include(u => u.ScoreGroups)
@@ -136,7 +136,7 @@ public sealed class ScoreGroupService
         return RemoveUserFromScoreGroupResult.Success;
     }
     
-    public async Task<DeleteScoreGroupResult> DeleteAsync(int scoreGroupId, CancellationToken ct)
+    public async Task<DeleteScoreGroupResult> DeleteScoreGroupAsync(int scoreGroupId, CancellationToken ct)
     {
         // Does it exist?
         var exists = await _db.ScoreGroups.AnyAsync(s => s.Id == scoreGroupId, ct);

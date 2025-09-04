@@ -16,20 +16,20 @@ public class ClassGroupController : ControllerBase
     [HttpGet("{classGroupId:int}", Name = "GetClassGroupById")]
     public async Task<ActionResult<ClassGroupDto>> GetClassGroup(int classGroupId, CancellationToken ct)
     {
-        var dto = await _svc.GetByIdAsync(classGroupId, ct);
+        var dto = await _svc.GetClassGroupByIdAsync(classGroupId, ct);
         return dto is null ? NotFound() : Ok(dto);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ClassGroupDto>>> GetAll(CancellationToken ct) =>
-        Ok(await _svc.GetAllAsync(ct));
+    public async Task<ActionResult<IEnumerable<ClassGroupDto>>> GetAllClassGroups(CancellationToken ct) =>
+        Ok(await _svc.GetAllClassGroupsAsync(ct));
 
     [HttpPost]
-    public async Task<ActionResult<ClassGroupDto>> Create([FromBody] CreateClassGroupRequest request, CancellationToken ct)
+    public async Task<ActionResult<ClassGroupDto>> CreateClassGroup([FromBody] CreateClassGroupRequest request, CancellationToken ct)
     {
         try
         {
-            var dto = await _svc.CreateAsync(request, ct);
+            var dto = await _svc.CreateClassGroupAsync(request, ct);
             return CreatedAtRoute("GetClassGroupById", new { classGroupId = dto.Id }, dto);
         }
         catch (ValidationException ex)
@@ -39,11 +39,11 @@ public class ClassGroupController : ControllerBase
     }
 
     [HttpPut("{classGroupId:int}")]
-    public async Task<ActionResult<ClassGroupDto>> Edit(int classGroupId, [FromBody] UpdateClassGroupRequest request, CancellationToken ct)
+    public async Task<ActionResult<ClassGroupDto>> EditClassGroup(int classGroupId, [FromBody] UpdateClassGroupRequest request, CancellationToken ct)
     {
         try
         {
-            var dto = await _svc.UpdateAsync(classGroupId, request, ct);
+            var dto = await _svc.UpdateClassGroupAsync(classGroupId, request, ct);
             return dto is null ? NotFound() : Ok(dto);
         }
         catch (ValidationException ex)
@@ -53,25 +53,13 @@ public class ClassGroupController : ControllerBase
     }
 
     [HttpPut("{classGroupId:int}/users/{userId:int}")]
-    public async Task<IActionResult> AddUser(int classGroupId, int userId, CancellationToken ct) =>
-        await _svc.AssignUserAsync(classGroupId, userId, ct) ? NoContent() : NotFound();
-
-    [HttpDelete("{classGroupId:int}/users/{userId:int}")]
-    public async Task<IActionResult> RemoveUser(int classGroupId, int userId, CancellationToken ct)
-    {
-        var result = await _svc.RemoveUserAsync(classGroupId, userId, ct);
-        return result switch
-        {
-            RemoveUserResult.NotFound => NotFound(),
-            RemoveUserResult.Conflict => Conflict("A user must belong to a ClassGroup. To move them, call PUT /api/ClassGroup/{targetClassGroupId}/users/{userId}."),
-            _ => NoContent()
-        };
-    }
+    public async Task<IActionResult> AddUserClassGroup(int classGroupId, int userId, CancellationToken ct) =>
+        await _svc.AssignUserClassGroupAsync(classGroupId, userId, ct) ? NoContent() : NotFound();
     
     [HttpDelete("{classGroupId:int}")]
-    public async Task<IActionResult> Delete(int classGroupId, CancellationToken ct)
+    public async Task<IActionResult> DeleteClassGroup(int classGroupId, CancellationToken ct)
     {
-        var result = await _svc.DeleteAsync(classGroupId, ct);
+        var result = await _svc.DeleteClassGroupAsync(classGroupId, ct);
         return result switch
         {
             DeleteClassGroupResult.NotFound => NotFound(),

@@ -15,24 +15,24 @@ public class ScoreGroupController : ControllerBase
     [HttpGet("{scoreGroupId:int}", Name = "GetScoreGroupById")]
     public async Task<ActionResult<ScoreGroupDto>> GetScoreGroup(int scoreGroupId, CancellationToken ct)
     {
-        var dto = await _svc.GetByIdAsync(scoreGroupId, ct);
+        var dto = await _svc.GetScoreGroupByIdAsync(scoreGroupId, ct);
         return dto is null ? NotFound() : Ok(dto);
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ScoreGroupDto>>> GetAll(CancellationToken ct)
-        => Ok(await _svc.GetAllAsync(ct));
+    public async Task<ActionResult<IEnumerable<ScoreGroupDto>>> GetAllScoreGroups(CancellationToken ct)
+        => Ok(await _svc.GetAllScoreGroupsAsync(ct));
 
     [HttpGet("{scoreGroupId:int}/users")]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers(int scoreGroupId, CancellationToken ct)
-        => Ok(await _svc.GetUsersAsync(scoreGroupId, ct));
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsersScoreGroup(int scoreGroupId, CancellationToken ct)
+        => Ok(await _svc.GetUsersScoreGroupAsync(scoreGroupId, ct));
 
     [HttpPost]
-    public async Task<ActionResult<ScoreGroupDto>> Create([FromBody] CreateScoreGroupRequest request, CancellationToken ct)
+    public async Task<ActionResult<ScoreGroupDto>> CreateScoreGroup([FromBody] CreateScoreGroupRequest request, CancellationToken ct)
     {
         try
         {
-            var dto = await _svc.CreateAsync(request, ct);
+            var dto = await _svc.CreateScoreGroupAsync(request, ct);
             return CreatedAtRoute("GetScoreGroupById", new { scoreGroupId = dto.Id }, dto);
         }
         catch (ValidationException ex)
@@ -42,11 +42,11 @@ public class ScoreGroupController : ControllerBase
     }
 
     [HttpPut("{scoreGroupId:int}")]
-    public async Task<ActionResult<ScoreGroupDto>> Edit(int scoreGroupId, [FromBody] UpdateScoreGroupRequest request, CancellationToken ct)
+    public async Task<ActionResult<ScoreGroupDto>> EditScoreGroup(int scoreGroupId, [FromBody] UpdateScoreGroupRequest request, CancellationToken ct)
     {
         try
         {
-            var dto = await _svc.UpdateAsync(scoreGroupId, request, ct);
+            var dto = await _svc.UpdateScoreGroupAsync(scoreGroupId, request, ct);
             return dto is null ? NotFound() : Ok(dto);
         }
         catch (ValidationException ex)
@@ -56,13 +56,13 @@ public class ScoreGroupController : ControllerBase
     }
 
     [HttpPut("{scoreGroupId:int}/users/{userId:int}")]
-    public async Task<IActionResult> AddUser(int scoreGroupId, int userId, CancellationToken ct)
-        => await _svc.AddUserAsync(scoreGroupId, userId, ct) ? NoContent() : NotFound();
+    public async Task<IActionResult> AddUserScoreGroup(int scoreGroupId, int userId, CancellationToken ct)
+        => await _svc.AddUserScoreGroupAsync(scoreGroupId, userId, ct) ? NoContent() : NotFound();
 
     [HttpDelete("{scoreGroupId:int}/users/{userId:int}")]
-    public async Task<IActionResult> RemoveUser(int scoreGroupId, int userId, CancellationToken ct)
+    public async Task<IActionResult> RemoveUserScoreGroup(int scoreGroupId, int userId, CancellationToken ct)
     {
-        var result = await _svc.RemoveUserAsync(scoreGroupId, userId, ct);
+        var result = await _svc.RemoveUserScoreGroupAsync(scoreGroupId, userId, ct);
         return result switch
         {
             RemoveUserFromScoreGroupResult.NotFound => NotFound(),
@@ -71,9 +71,9 @@ public class ScoreGroupController : ControllerBase
     }
     
     [HttpDelete("{scoreGroupId:int}")]
-    public async Task<IActionResult> Delete(int scoreGroupId, CancellationToken ct)
+    public async Task<IActionResult> DeleteScoreGroup(int scoreGroupId, CancellationToken ct)
     {
-        var result = await _svc.DeleteAsync(scoreGroupId, ct);
+        var result = await _svc.DeleteScoreGroupAsync(scoreGroupId, ct);
         return result switch
         {
             DeleteScoreGroupResult.NotFound => NotFound(),

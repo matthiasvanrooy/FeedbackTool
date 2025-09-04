@@ -13,13 +13,13 @@ public class UserController : ControllerBase
     public UserController(UserService svc) => _svc = svc;
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetAll(CancellationToken ct)
-        => Ok(await _svc.GetAllAsync(ct));
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers(CancellationToken ct)
+        => Ok(await _svc.GetAllUsersAsync(ct));
 
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<UserDto>> Get(int id, CancellationToken ct)
+    public async Task<ActionResult<UserDto>> GetUser(int id, CancellationToken ct)
     {
-        var dto = await _svc.GetByIdAsync(id, ct);
+        var dto = await _svc.GetUserByIdAsync(id, ct);
         return dto is null ? NotFound() : Ok(dto);
     }
 
@@ -28,12 +28,12 @@ public class UserController : ControllerBase
         => Ok(await _svc.GetUserScoreGroupsAsync(userId, ct));
 
     [HttpPost]
-    public async Task<ActionResult<UserDto>> Create([FromBody] CreateUserRequest request, CancellationToken ct)
+    public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {
         try
         {
-            var dto = await _svc.CreateAsync(request, ct);
-            return CreatedAtAction(nameof(Get), new { id = dto.Id }, dto);
+            var dto = await _svc.CreateUserAsync(request, ct);
+            return CreatedAtAction(nameof(GetUser), new { id = dto.Id }, dto);
         }
         catch (ValidationException ex)
         {
@@ -42,11 +42,11 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<UserDto>> Update(int id, [FromBody] UpdateUserRequest request, CancellationToken ct)
+    public async Task<ActionResult<UserDto>> UpdateUser(int id, [FromBody] UpdateUserRequest request, CancellationToken ct)
     {
         try
         {
-            var dto = await _svc.UpdateAsync(id, request, ct);
+            var dto = await _svc.UpdateUserAsync(id, request, ct);
             return dto is null ? NotFound() : Ok(dto);
         }
         catch (ValidationException ex)
@@ -56,6 +56,6 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken ct)
-        => await _svc.UserDeleteAsync(id, ct) ? NoContent() : NotFound();
+    public async Task<IActionResult> DeleteUser(int id, CancellationToken ct)
+        => await _svc.DeleteUserAsync(id, ct) ? NoContent() : NotFound();
 }
