@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ScoreGroupDTOs;
 using Feedbacktool.DTOs.UserDTOs;
+using Microsoft.AspNetCore.Identity;
 
 namespace Feedbacktool.Api.Services;
 
@@ -18,8 +19,6 @@ public sealed class UserService
         _db = db;
         _mapper = mapper;
     }
-    
-    //USER HAALT GEEN SCOREGROUPS enz op, DTO
 
     // -------- Queries --------
 
@@ -47,6 +46,7 @@ public sealed class UserService
 
     public async Task<UserDto> CreateUserAsync(CreateUserRequest req, CancellationToken ct)
     {
+        var hasher = new PasswordHasher<User>();
         if (req is null) throw new ValidationException("Request body is required.");
 
         var name  = (req.Name  ?? string.Empty).Trim();
@@ -68,10 +68,11 @@ public sealed class UserService
         {
             Name = name,
             Email = email,
-            Password = pwd,
             Role = req.Role,
             ClassGroupId = req.ClassGroupId
         };
+        
+        user.Password = hasher.HashPassword(user, pwd.Trim().ToLower());
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync(ct);
@@ -85,6 +86,8 @@ public sealed class UserService
 
         var u = await _db.Users.FirstOrDefaultAsync(x => x.Id == id, ct);
         if (u is null) return null;
+        
+        var hasher = new PasswordHasher<User>();
 
         // Update Email if provided
         if (!string.IsNullOrWhiteSpace(req.Email))
@@ -108,7 +111,7 @@ public sealed class UserService
         if (!string.IsNullOrWhiteSpace(req.Password))
         {
             // NOTE: hash in production
-            u.Password = req.Password.Trim();
+            u.Password = hasher.HashPassword(u, req.Password.Trim());
         }
 
         // Update Role if provided

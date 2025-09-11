@@ -5,7 +5,7 @@ namespace Feedbacktool.DTOs.ScoreGroupDTOs;
 public class CreateScoreGroupRequest
 {
     [Required]
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; set; } = "";
 
     [Required]
     public int SubjectId { get; set; }
