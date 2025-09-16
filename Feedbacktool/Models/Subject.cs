@@ -5,8 +5,7 @@ namespace Feedbacktool.Models;
 public class Subject
 {
     public int Id { get; set; }
-    [Required]
-    [MaxLength(40)]
+    [Required, MaxLength(40)]
     public string Name { get; set; } = "";
     [MaxLength(100)]
     public string? ImageUrl { get; set; }

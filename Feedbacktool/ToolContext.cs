@@ -11,14 +11,15 @@ public class ToolContext : DbContext
     public DbSet<Subject> Subjects { get; set; } = null!;
     public DbSet<ClassGroup> ClassGroups { get; set; } = null!;
     public DbSet<ScoreGroup> ScoreGroups { get; set; } = null!;
+    public DbSet<ScoreRecord> ScoreRecords { get; set; } = null!;
 
     public ToolContext(DbContextOptions<ToolContext> options) : base(options) { }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+ protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-        // ---- Table-per-Type (TPT) mapping (you can keep this even if no inheritance now) ----
+        // ---- Table-per-Type (TPT) mapping ----
         modelBuilder.Entity<ClassGroup>().ToTable("ClassGroups");
         modelBuilder.Entity<ScoreGroup>().ToTable("ScoreGroups");
 
@@ -42,10 +43,9 @@ public class ToolContext : DbContext
             .WithMany(cg => cg.Users)
             .HasForeignKey(u => u.ClassGroupId)
             .IsRequired()
-            .OnDelete(DeleteBehavior.Restrict); // don't cascade-delete users if a class group is removed
+            .OnDelete(DeleteBehavior.Restrict);
 
         // ---------- User <-> ScoreGroup (many-to-many) ----------
-        // This ensures a composite PK (UserId, ScoreGroupId) -> one assignment max per pair.
         modelBuilder.Entity<User>()
             .HasMany(u => u.ScoreGroups)
             .WithMany(sg => sg.Users)
@@ -62,18 +62,43 @@ public class ToolContext : DbContext
         // ---------- ScoreGroup -> Subject (many-to-one) ----------
         modelBuilder.Entity<ScoreGroup>()
             .HasOne(sg => sg.Subject)
-            .WithMany(s => s.ScoreGroups)   // ensure Subject has ICollection<ScoreGroup> ScoreGroups { get; set; }
+            .WithMany(s => s.ScoreGroups)
             .HasForeignKey(sg => sg.SubjectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ---------- Subject -> Exercise (one-to-many) ----------
+        modelBuilder.Entity<Subject>()
+            .HasMany(s => s.Exercises)
+            .WithOne(e => e.Subject)
+            .HasForeignKey(e => e.SubjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ---------- User -> ScoreRecord (one-to-many) ----------
+        modelBuilder.Entity<ScoreRecord>()
+            .HasOne(sr => sr.User)
+            .WithMany(u => u.ScoreRecords)
+            .HasForeignKey(sr => sr.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ---------- Exercise -> ScoreRecord (one-to-many) ----------
+        modelBuilder.Entity<ScoreRecord>()
+            .HasOne(sr => sr.Exercise)
+            .WithMany(e => e.ScoreRecords)
+            .HasForeignKey(sr => sr.ExerciseId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ---------- Unique constraint: one score per (User, Exercise) ----------
+        modelBuilder.Entity<ScoreRecord>()
+            .HasIndex(sr => new { sr.UserId, sr.ExerciseId })
+            .IsUnique();
 
         // ---------- Indexes / constraints ----------
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
-            .IsUnique(); // recommended: normalize/lowercase emails at write-time
+            .IsUnique();
 
         modelBuilder.Entity<User>().Property(u => u.Role).HasConversion<int>();
 
-        // Optional but recommended: guard rails on strings
         modelBuilder.Entity<User>(e =>
         {
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
@@ -84,23 +109,31 @@ public class ToolContext : DbContext
         modelBuilder.Entity<ClassGroup>(e =>
         {
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
-            // Optional: unique class group names
-            // e.HasIndex(x => x.Name).IsUnique();
         });
 
         modelBuilder.Entity<ScoreGroup>(e =>
         {
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
-            // Optional: enforce unique name per subject
             e.HasIndex(x => new { x.SubjectId, x.Name }).IsUnique();
         });
-
-        // ---------- Subject -> Exercise (one-to-many) ----------
-        // Prefers an explicit FK property Exercise.SubjectId (int)
-        modelBuilder.Entity<Subject>()
-            .HasMany(s => s.Exercises)
-            .WithOne(e => e.Subject)
-            .HasForeignKey(e => e.SubjectId)
+        
+        modelBuilder.Entity<Exercise>()
+            .HasMany(e => e.Items)
+            .WithOne(i => i.Exercise)
+            .HasForeignKey(i => i.ExerciseId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<ExerciseItemResult>()
+            .HasOne(r => r.ExerciseItem)
+            .WithMany()
+            .HasForeignKey(r => r.ExerciseItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ExerciseItemResult>()
+            .HasOne(r => r.ScoreRecord)
+            .WithMany(sr => sr.ItemResults)
+            .HasForeignKey(r => r.ScoreRecordId)
+            .OnDelete(DeleteBehavior.Cascade);
+
     }
 }

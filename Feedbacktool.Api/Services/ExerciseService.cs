@@ -52,7 +52,7 @@ public sealed class ExerciseService
             Name = name,
             Description = req.Description.Trim(),
             Category = req.Category,
-            Score = req.Score,
+            MaxScore = req.MaxScore,
             SubjectId = req.SubjectId
         };
 
@@ -88,9 +88,9 @@ public sealed class ExerciseService
         }
 
         // Update Score if provided
-        if (req.Score.HasValue)
+        if (req.MaxScore.HasValue)
         {
-            ex.Score = req.Score.Value;
+            ex.MaxScore = req.MaxScore.Value;
         }
 
         // Update SubjectId if provided

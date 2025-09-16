@@ -5,8 +5,7 @@ namespace Feedbacktool.Models;
 public class ScoreGroup
 { 
     public int Id { get; set; }
-    [Required]
-    [MaxLength(40)]
+    [Required, MaxLength(40)]
     public string Name { get; set; } = "";
     [Required]
     public int SubjectId { get; set; }

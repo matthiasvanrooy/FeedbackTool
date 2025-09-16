@@ -12,4 +12,5 @@ public sealed class UserDto
     public ClassGroup? ClassGroup { get; set; }
     public IEnumerable<Subject> Subjects { get; set; } = new HashSet<Subject>();
     public IEnumerable<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();
+    public IEnumerable<ScoreRecord> ScoreRecords { get; set; } = new HashSet<ScoreRecord>();
 }

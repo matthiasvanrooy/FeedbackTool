@@ -12,7 +12,7 @@ public class CreateExerciseRequest
     [Required]
     public Category Category { get; init; }
     [Required]
-    public int Score { get; init; }
+    public int MaxScore { get; init; }
     [Required]
     public int SubjectId { get; init; }
 }

@@ -16,7 +16,7 @@ public class User
         public ClassGroup? ClassGroup { get; set; }
         public ICollection<Subject> Subjects { get; set; } = new HashSet<Subject>();
         public ICollection<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();
-
+        public ICollection<ScoreRecord> ScoreRecords { get; set; } = new List<ScoreRecord>();
 
         public User(int id, string name, string email, string password, Role role, int classGroupId, ICollection<Subject> subjects,  ICollection<ScoreGroup> scoreGroups)
         {
