@@ -3,17 +3,20 @@ using System;
 using Feedbacktool;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Feedbacktool.Api.Migrations
+namespace Feedbacktool.Api.Data.Migrations
 {
     [DbContext(typeof(ToolContext))]
-    partial class ToolContextModelSnapshot : ModelSnapshot
+    [Migration("20250916090832_AddExerciseItems")]
+    partial class AddExerciseItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

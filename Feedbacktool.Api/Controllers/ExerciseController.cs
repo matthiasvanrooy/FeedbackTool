@@ -2,6 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ExerciseDTOs;
 using Feedbacktool.Api.Services;
+using Feedbacktool.DTOs.ExerciseItemDTOs;
 
 namespace Feedbacktool.Api.Controllers;
 
@@ -63,4 +64,46 @@ public class ExerciseController : ControllerBase
             _ => NoContent()
         };
     }
+    
+    [HttpGet("{exerciseId:int}/items")]
+    public async Task<ActionResult<IEnumerable<ExerciseItemDto>>> GetItems(int exerciseId, CancellationToken ct)
+    {
+        var items = await _svc.GetExerciseItemsAsync(exerciseId, ct);
+        return Ok(items);
+    }
+
+    [HttpPost("{exerciseId:int}/items")]
+    public async Task<ActionResult<ExerciseItemDto>> AddItem(
+        int exerciseId,
+        [FromBody] CreateExerciseItemRequest request,
+        CancellationToken ct)
+    {
+        try
+        {
+            var dto = await _svc.AddExerciseItemAsync(exerciseId, request, ct);
+            return CreatedAtAction(nameof(GetItems), new { exerciseId }, dto);
+        }
+        catch (ValidationException ex)
+        {
+            return ValidationProblem(ex.Message);
+        }
+    }
+
+    [HttpPut("items/{itemId:int}")]
+    public async Task<ActionResult<ExerciseItemDto>> UpdateItem(
+        int itemId,
+        [FromBody] UpdateExerciseItemRequest request,
+        CancellationToken ct)
+    {
+        var dto = await _svc.UpdateExerciseItemAsync(itemId, request, ct);
+        return dto is null ? NotFound() : Ok(dto);
+    }
+
+    [HttpDelete("items/{itemId:int}")]
+    public async Task<IActionResult> DeleteItem(int itemId, CancellationToken ct)
+    {
+        var success = await _svc.DeleteExerciseItemAsync(itemId, ct);
+        return success ? NoContent() : NotFound();
+    }
+
 }
