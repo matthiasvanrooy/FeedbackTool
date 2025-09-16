@@ -13,6 +13,8 @@ public class ToolContext : DbContext
     public DbSet<ScoreGroup> ScoreGroups { get; set; } = null!;
     public DbSet<ScoreRecord> ScoreRecords { get; set; } = null!;
     public DbSet<ExerciseItem> ExerciseItems { get; set; } = null!;
+    public DbSet<FeedbackRule> FeedbackRules { get; set; } = null!;
+    public DbSet<ExerciseItemResult> ExerciseItemResults { get; set; } = null!;
 
     public ToolContext(DbContextOptions<ToolContext> options) : base(options) { }
 
@@ -136,5 +138,10 @@ public class ToolContext : DbContext
             .HasForeignKey(r => r.ScoreRecordId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Exercise>()
+            .HasMany(e => e.FeedbackRules)
+            .WithOne(f => f.Exercise)
+            .HasForeignKey(f => f.ExerciseId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

@@ -16,6 +16,7 @@ public class Exercise
     public Subject Subject { get; set; }
     public ICollection<ScoreRecord> ScoreRecords { get; set; } = new List<ScoreRecord>();
     public ICollection<ExerciseItem> Items { get; set; } = new List<ExerciseItem>();
+    public ICollection<FeedbackRule> FeedbackRules { get; set; } = new List<FeedbackRule>();
     
     public Exercise(int id, string name, string description, Category category, int maxscore, int subjectId)
     {
