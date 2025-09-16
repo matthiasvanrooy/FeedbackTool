@@ -9,7 +9,7 @@ public class ExerciseItem
     [Required]
     public string Question { get; set; } = "";
 
-    public string? Answer { get; set; } // optional, if teacher provides
+    public string Answer { get; set; } // optional, if teacher provides
 
     public int ExerciseId { get; set; }
     public Exercise Exercise { get; set; }

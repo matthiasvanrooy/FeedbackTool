@@ -12,6 +12,7 @@ public class ToolContext : DbContext
     public DbSet<ClassGroup> ClassGroups { get; set; } = null!;
     public DbSet<ScoreGroup> ScoreGroups { get; set; } = null!;
     public DbSet<ScoreRecord> ScoreRecords { get; set; } = null!;
+    public DbSet<ExerciseItem> ExerciseItems { get; set; } = null!;
 
     public ToolContext(DbContextOptions<ToolContext> options) : base(options) { }
 

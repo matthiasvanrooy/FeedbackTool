@@ -3,6 +3,7 @@ using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ExerciseDTOs;
+using Feedbacktool.DTOs.ExerciseItemDTOs;
 using Feedbacktool.Models;
 
 namespace Feedbacktool.Api.Services;
@@ -119,4 +120,60 @@ public sealed class ExerciseService
 
         return affected > 0 ? DeleteExerciseResult.Deleted : DeleteExerciseResult.NotFound;
     }
+    
+    public async Task<ExerciseItemDto> AddExerciseItemAsync(int exerciseId, CreateExerciseItemRequest req, CancellationToken ct)
+    {
+        var exercise = await _db.Exercises.Include(e => e.Items)
+            .FirstOrDefaultAsync(e => e.Id == exerciseId, ct);
+
+        if (exercise == null)
+            throw new ValidationException("Exercise not found.");
+
+        var item = new ExerciseItem
+        {
+            Question = req.Question.Trim(),
+            Answer = req.Answer,
+            ExerciseId = exerciseId
+        };
+
+        exercise.Items.Add(item);
+        await _db.SaveChangesAsync(ct);
+
+        return _mapper.Map<ExerciseItemDto>(item);
+    }
+
+    public async Task<ExerciseItemDto?> UpdateExerciseItemAsync(int itemId, UpdateExerciseItemRequest req, CancellationToken ct)
+    {
+        var item = await _db.ExerciseItems.FirstOrDefaultAsync(i => i.Id == itemId, ct);
+        if (item == null) return null;
+
+        if (!string.IsNullOrWhiteSpace(req.Question))
+            item.Question = req.Question.Trim();
+
+        if (req.Answer != null)
+            item.Answer = req.Answer;
+
+        await _db.SaveChangesAsync(ct);
+        return _mapper.Map<ExerciseItemDto>(item);
+    }
+
+    public async Task<bool> DeleteExerciseItemAsync(int itemId, CancellationToken ct)
+    {
+        var item = await _db.ExerciseItems.FirstOrDefaultAsync(i => i.Id == itemId, ct);
+        if (item == null) return false;
+
+        _db.ExerciseItems.Remove(item);
+        await _db.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<List<ExerciseItemDto>> GetExerciseItemsAsync(int exerciseId, CancellationToken ct)
+    {
+        return await _db.ExerciseItems
+            .Where(i => i.ExerciseId == exerciseId)
+            .ProjectTo<ExerciseItemDto>(_mapper.ConfigurationProvider)
+            .AsNoTracking()
+            .ToListAsync(ct);
+    }
+
 }
