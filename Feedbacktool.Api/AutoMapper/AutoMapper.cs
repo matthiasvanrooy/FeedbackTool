@@ -13,7 +13,7 @@ namespace Feedbacktool.Api.AutoMapper;
 
 using Models;
 
-//No licence! What if I need one?
+//No licence! What if I need one? Oh no!
 public class MappingProfile : Profile
 {
     public MappingProfile()
