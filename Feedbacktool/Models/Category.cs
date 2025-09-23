@@ -2,5 +2,8 @@
 
 public enum Category
 { 
-    Grammatica, Kennis, Vaardigheden, Woordenschat
+    Grammatica = 0, 
+    Kennis = 1, 
+    Vaardigheden = 2, 
+    Woordenschat = 3
 }

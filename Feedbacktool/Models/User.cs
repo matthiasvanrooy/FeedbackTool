@@ -1,26 +1,31 @@
-﻿namespace Feedbacktool.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Feedbacktool.Models;
 public class User
     {
         public int Id { get; set; }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
-        public bool IsTeacher { get; set; }
+        [Required] public string Name { get; set; } = "";
+        [Required, EmailAddress]
+        public string Email { get; set; } = "";
+        [Required]
+        public string Password { get; set; } = "";
+        public Role Role { get; set; }
+        [Required]
         public int ClassGroupId { get; set; }
-        public ClassGroup ClassGroup { get; set; }
+
+        public ClassGroup? ClassGroup { get; set; }
         public ICollection<Subject> Subjects { get; set; } = new HashSet<Subject>();
         public ICollection<ScoreGroup> ScoreGroups { get; set; } = new HashSet<ScoreGroup>();
+        public ICollection<ScoreRecord> ScoreRecords { get; set; } = new List<ScoreRecord>();
 
-
-        public User(int id, string name, string email, string password, bool isTeacher, int classGroupId, ClassGroup classGroup, ICollection<Subject> subjects,  ICollection<ScoreGroup> scoreGroups)
+        public User(int id, string name, string email, string password, Role role, int classGroupId, ICollection<Subject> subjects,  ICollection<ScoreGroup> scoreGroups)
         {
             Id = id;
             Name = name;
             Email = email;
             Password = password;
-            IsTeacher = isTeacher;
+            Role = role;
             ClassGroupId = classGroupId;
-            ClassGroup = classGroup;
             Subjects = subjects;
             ScoreGroups = scoreGroups;
         }
