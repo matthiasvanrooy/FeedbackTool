@@ -28,4 +28,4 @@ jobs:
         context: .
         file: Feedbacktool.Api/Dockerfile
         push: true
-        tags: matthiasvanrooy/feedbacktool-api:latest
+        tags: matthivr1987/feedbacktool-api:latest
