@@ -2,9 +2,11 @@
 using System.ComponentModel.DataAnnotations;
 using Feedbacktool.Api.Services;
 using Feedbacktool.DTOs.ClassGroupDTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Feedbacktool.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ClassGroupController : ControllerBase
@@ -24,6 +26,7 @@ public class ClassGroupController : ControllerBase
     public async Task<ActionResult<IEnumerable<ClassGroupDto>>> GetAllClassGroups(CancellationToken ct) =>
         Ok(await _svc.GetAllClassGroupsAsync(ct));
 
+    [Authorize(Roles = "Teacher")]
     [HttpPost]
     public async Task<ActionResult<ClassGroupDto>> CreateClassGroup([FromBody] CreateClassGroupRequest request, CancellationToken ct)
     {
