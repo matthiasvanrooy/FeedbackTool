@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ExerciseDTOs;
 using Feedbacktool.Api.Services;
 using Feedbacktool.DTOs.ExerciseItemDTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Feedbacktool.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ExerciseController : ControllerBase

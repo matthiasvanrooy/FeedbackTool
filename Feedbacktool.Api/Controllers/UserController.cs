@@ -30,7 +30,7 @@ public class UserController : ControllerBase
     public async Task<ActionResult<IEnumerable<ScoreGroupDto>>> GetUserScoreGroups(int userId, CancellationToken ct)
         => Ok(await _svc.GetUserScoreGroupsAsync(userId, ct));
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "Teacher, Admin")]
     [HttpPost]
     public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {

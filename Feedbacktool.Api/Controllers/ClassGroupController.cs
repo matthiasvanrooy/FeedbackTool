@@ -26,7 +26,7 @@ public class ClassGroupController : ControllerBase
     public async Task<ActionResult<IEnumerable<ClassGroupDto>>> GetAllClassGroups(CancellationToken ct) =>
         Ok(await _svc.GetAllClassGroupsAsync(ct));
 
-    [Authorize(Roles = "Teacher")]
+    [Authorize(Roles = "Teacher, Admin")]
     [HttpPost]
     public async Task<ActionResult<ClassGroupDto>> CreateClassGroup([FromBody] CreateClassGroupRequest request, CancellationToken ct)
     {
