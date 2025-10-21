@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Feedbacktool.DTOs.FeedbackRuleDTOs;
 using Feedbacktool.Models;
+using Microsoft.AspNetCore.Authorization;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class FeedbackController : ControllerBase

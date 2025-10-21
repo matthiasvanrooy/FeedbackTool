@@ -1,9 +1,13 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using Feedbacktool;
 using Feedbacktool.Api.AutoMapper;
+using Feedbacktool.Api.Data;
 using Feedbacktool.Api.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +27,39 @@ builder.Services.AddControllers()
         o.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        var jwt = builder.Configuration.GetSection("Jwt");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwt["Issuer"],
+            ValidAudience = jwt["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt["Key"]!))
+        };
+
+        // Read token from cookie
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Cookies.ContainsKey("jwt"))
+                {
+                    context.Token = context.Request.Cookies["jwt"];
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ClassGroupService>();
@@ -30,6 +67,7 @@ builder.Services.AddScoped<ScoreGroupService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ExerciseService>();
 builder.Services.AddScoped<SubjectService>();
+builder.Services.AddScoped<ILoginService, LoginService>();
 builder.Services.AddSingleton<IMapper>(sp =>
 {
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();

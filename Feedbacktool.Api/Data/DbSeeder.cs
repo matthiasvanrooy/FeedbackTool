@@ -1,7 +1,8 @@
 ﻿using Feedbacktool.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Feedbacktool;
+namespace Feedbacktool.Api.Data;
 
 public static class DbSeeder
 {
@@ -22,25 +23,26 @@ public static class DbSeeder
         db.Subjects.AddRange(s1, s2);
 
         // --- Users ---
+        var hasher = new PasswordHasher<User>();
         var admin = new User
         {
             Name = "Admin",
             Email = "admin@example.com",
-            Password = "admin",
             Role = Role.Admin,
             ClassGroup = cg1,
             Subjects = new List<Subject> { s2 }
         };
+        admin.Password = hasher.HashPassword(admin, "admin");
 
         var alice = new User
         {
             Name = "Alice",
             Email = "alice@example.com",
-            Password = "pw1",
             Role = Role.Teacher,
             ClassGroup = cg1,
             Subjects = new List<Subject> { s2 }
         };
+        alice.Password = hasher.HashPassword(alice, "alice");
 
         var bob = new User
         {
@@ -51,16 +53,17 @@ public static class DbSeeder
             ClassGroup = cg2,
             Subjects = new List<Subject> { s1 }
         };
+        bob.Password = hasher.HashPassword(bob, "bob");
 
         var charlie = new User
         {
             Name = "Charlie",
             Email = "charlie@example.com",
-            Password = "pw3",
             Role = Role.Student,
             ClassGroup = cg2,
             Subjects = new List<Subject> { s1, s2 }
         };
+        charlie.Password = hasher.HashPassword(charlie, "charlie");
 
         db.Users.AddRange(admin, alice, bob, charlie);
         db.SaveChanges(); // generate IDs

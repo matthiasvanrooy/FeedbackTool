@@ -1,9 +1,11 @@
 ﻿using Feedbacktool.Api.Services;
 using Feedbacktool.DTOs.ScoreRecordDTOs;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Feedbacktool.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ScoreRecordController : ControllerBase

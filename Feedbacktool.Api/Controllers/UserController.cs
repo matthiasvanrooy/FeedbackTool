@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.ScoreGroupDTOs;
 using Feedbacktool.DTOs.UserDTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Feedbacktool.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase
@@ -28,6 +30,7 @@ public class UserController : ControllerBase
     public async Task<ActionResult<IEnumerable<ScoreGroupDto>>> GetUserScoreGroups(int userId, CancellationToken ct)
         => Ok(await _svc.GetUserScoreGroupsAsync(userId, ct));
 
+    [Authorize(Roles = "Teacher, Admin")]
     [HttpPost]
     public async Task<ActionResult<UserDto>> CreateUser([FromBody] CreateUserRequest request, CancellationToken ct)
     {
@@ -56,6 +59,7 @@ public class UserController : ControllerBase
         }
     }
 
+    [Authorize(Roles = "Teacher")]
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> DeleteUser(int id, CancellationToken ct)
         => await _svc.DeleteUserAsync(id, ct) ? NoContent() : NotFound();

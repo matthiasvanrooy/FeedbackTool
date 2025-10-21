@@ -3,9 +3,11 @@ using System.ComponentModel.DataAnnotations;
 using Feedbacktool.DTOs.UserDTOs;
 using Feedbacktool.DTOs.ScoreGroupDTOs;
 using Feedbacktool.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Feedbacktool.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ScoreGroupController : ControllerBase

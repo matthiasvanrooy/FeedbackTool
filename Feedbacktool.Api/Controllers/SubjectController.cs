@@ -2,10 +2,12 @@
 using Feedbacktool.DTOs.ExerciseDTOs;
 using Feedbacktool.DTOs.SubjectDTOs;
 using Feedbacktool.Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Feedbacktool.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class SubjectsController : ControllerBase
