@@ -2,7 +2,7 @@
 
 namespace Feedbacktool.DTOs.UserDTOs;
 
-public class UserLoginDto
+public class UserLoginRequestDto
 {
     [Required, EmailAddress]
     public string Email { get; set; } = "";
